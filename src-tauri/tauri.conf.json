@@ -1,0 +1,33 @@
+{
+    "$schema": "https://schema.tauri.app/config/2",
+    "productName": "Tool Box",
+    "version": "0.1.0",
+    "identifier": "com.xuzh.toolbox",
+    "build": {
+        "beforeDevCommand": "npm run dev -- --host 0.0.0.0 --port 1420",
+        "beforeBuildCommand": "npm run build",
+        "devUrl": "http://localhost:1420",
+        "frontendDist": "../dist"
+    },
+    "app": {
+        "windows": [
+            {
+                "title": "Tool Box",
+                "label": "main",
+                "width": 1480,
+                "height": 940,
+                "minWidth": 1100,
+                "minHeight": 760,
+                "resizable": true,
+                "fullscreen": false
+            }
+        ],
+        "security": {
+            "csp": null
+        }
+    },
+    "bundle": {
+        "active": false,
+        "targets": "all"
+    }
+}

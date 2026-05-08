@@ -1,0 +1,13 @@
+- [x] Verify that the copilot-instructions.md file in the .github directory is created.
+- [x] Clarify Project Requirements: Tauri + React + TypeScript desktop image toolbox with a workspace-style UI and Rust image processing backend.
+- [x] Scaffold the Project: Vite React TypeScript frontend created in the current workspace root and Tauri backend added under src-tauri.
+- [x] Customize the Project: Replaced starter content with a three-pane image toolbox UI and connected it to Rust commands.
+- [x] Install Required Extensions: No extensions needed.
+- [x] Compile the Project: Frontend build and Rust checks passed.
+- [x] Create and Run Task: Skipped because no persistent VS Code task was needed after validation.
+- [x] Launch the Project: Tauri dev mode reached the desktop binary successfully during validation.
+- [x] Ensure Documentation is Complete: README updated for the current project; this file now reflects the active workspace.
+
+- Use the current workspace root as the project root.
+- Keep the app focused on local desktop tooling.
+- Prefer minimal, validated changes over speculative expansion.
