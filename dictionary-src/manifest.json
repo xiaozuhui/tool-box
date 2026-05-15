@@ -1,0 +1,20 @@
+{
+    "version": "2026.05.15",
+    "sourceLabel": "Tool Box Offline Lexicon",
+    "languagePairs": [
+        "zh-en",
+        "en-zh"
+    ],
+    "features": [
+        "single-word-translation",
+        "phrase-translation",
+        "fuzzy-search",
+        "favorites",
+        "history",
+        "local-settings"
+    ],
+    "sources": [
+        "src-tauri/resources/dictionary_seed.json",
+        "dictionary-src/extensions/toolbox-extensions.json"
+    ]
+}

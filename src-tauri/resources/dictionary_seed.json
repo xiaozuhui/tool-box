@@ -1,0 +1,1279 @@
+{
+  "version": "2026.05.15",
+  "sourceLabel": "Tool Box Offline Lexicon",
+  "languagePairs": [
+    "zh-en",
+    "en-zh"
+  ],
+  "features": [
+    "single-word-translation",
+    "phrase-translation",
+    "fuzzy-search",
+    "favorites",
+    "history",
+    "local-settings"
+  ],
+  "generatedAt": "2026-05-15T07:56:38.134Z",
+  "packageCount": 2,
+  "entries": [
+    {
+      "term": "add watermark",
+      "sourceLanguage": "en",
+      "targetLanguage": "zh",
+      "phonetic": "/æd ˈwɔːtərmɑːrk/",
+      "tags": [
+        "tooling"
+      ],
+      "isPhrase": true,
+      "weight": 95,
+      "aliases": [
+        "watermark image"
+      ],
+      "senses": [
+        {
+          "definition": "增加水印",
+          "partOfSpeech": "v.",
+          "examples": [
+            "Add watermark before export. -> 导出前增加水印。"
+          ]
+        }
+      ]
+    },
+    {
+      "term": "artificial intelligence",
+      "sourceLanguage": "en",
+      "targetLanguage": "zh",
+      "phonetic": "/ˌɑːrtɪˈfɪʃl ɪnˈtelɪdʒəns/",
+      "tags": [
+        "tech"
+      ],
+      "isPhrase": true,
+      "weight": 126,
+      "aliases": [
+        "ai"
+      ],
+      "senses": [
+        {
+          "definition": "人工智能",
+          "partOfSpeech": "n.",
+          "examples": [
+            "Artificial intelligence is not required here. -> 这里并不需要人工智能模型。"
+          ]
+        }
+      ]
+    },
+    {
+      "term": "base64 encoding",
+      "sourceLanguage": "en",
+      "targetLanguage": "zh",
+      "phonetic": "/beɪs ˈsɪksti fɔːr ɪnˈkoʊdɪŋ/",
+      "tags": [
+        "tech",
+        "tooling"
+      ],
+      "isPhrase": true,
+      "weight": 92,
+      "aliases": [
+        "base64 encode"
+      ],
+      "senses": [
+        {
+          "definition": "Base64 编码",
+          "partOfSpeech": "n.",
+          "examples": [
+            "Base64 encoding is useful for transport. -> Base64 编码适合传输。"
+          ]
+        }
+      ]
+    },
+    {
+      "term": "crop image",
+      "sourceLanguage": "en",
+      "targetLanguage": "zh",
+      "phonetic": "/krɑːp ˈɪmɪdʒ/",
+      "tags": [
+        "tooling"
+      ],
+      "isPhrase": true,
+      "weight": 90,
+      "aliases": [
+        "image crop"
+      ],
+      "senses": [
+        {
+          "definition": "裁切图像",
+          "partOfSpeech": "v.",
+          "examples": [
+            "Crop image by pixel area. -> 按像素区域裁切图像。"
+          ]
+        }
+      ]
+    },
+    {
+      "term": "data structure",
+      "sourceLanguage": "en",
+      "targetLanguage": "zh",
+      "phonetic": "/ˈdeɪtə ˈstrʌktʃər/",
+      "tags": [
+        "tech"
+      ],
+      "isPhrase": true,
+      "weight": 118,
+      "aliases": [
+        "data structures"
+      ],
+      "senses": [
+        {
+          "definition": "数据结构",
+          "partOfSpeech": "n.",
+          "examples": [
+            "A better data structure improves search. -> 更好的数据结构会提升检索效果。"
+          ]
+        }
+      ]
+    },
+    {
+      "term": "detail panel",
+      "sourceLanguage": "en",
+      "targetLanguage": "zh",
+      "phonetic": "/ˈdiːteɪl ˈpænl/",
+      "tags": [
+        "product",
+        "ui"
+      ],
+      "isPhrase": true,
+      "weight": 118,
+      "aliases": [
+        "details panel"
+      ],
+      "senses": [
+        {
+          "definition": "详情面板",
+          "partOfSpeech": "n.",
+          "examples": [
+            "The detail panel shows senses and examples. -> 详情面板会展示义项和例句。"
+          ]
+        }
+      ]
+    },
+    {
+      "term": "image processing",
+      "sourceLanguage": "en",
+      "targetLanguage": "zh",
+      "phonetic": "/ˈɪmɪdʒ ˈprɑːsesɪŋ/",
+      "tags": [
+        "tech",
+        "tooling"
+      ],
+      "isPhrase": true,
+      "weight": 132,
+      "aliases": [
+        "process image",
+        "image ops"
+      ],
+      "senses": [
+        {
+          "definition": "图像处理",
+          "partOfSpeech": "n.",
+          "examples": [
+            "Rust handles image processing well. -> Rust 很适合做图像处理。"
+          ]
+        }
+      ]
+    },
+    {
+      "term": "machine learning",
+      "sourceLanguage": "en",
+      "targetLanguage": "zh",
+      "phonetic": "/məˈʃiːn ˈlɜːrnɪŋ/",
+      "tags": [
+        "tech"
+      ],
+      "isPhrase": true,
+      "weight": 116,
+      "aliases": [
+        "ml"
+      ],
+      "senses": [
+        {
+          "definition": "机器学习",
+          "partOfSpeech": "n.",
+          "examples": [
+            "This feature does not depend on machine learning. -> 这个功能不依赖机器学习。"
+          ]
+        }
+      ]
+    },
+    {
+      "term": "query ranking",
+      "sourceLanguage": "en",
+      "targetLanguage": "zh",
+      "phonetic": "/ˈkwɪri ˈræŋkɪŋ/",
+      "tags": [
+        "product",
+        "search"
+      ],
+      "isPhrase": true,
+      "weight": 122,
+      "senses": [
+        {
+          "definition": "查询排序",
+          "partOfSpeech": "n.",
+          "examples": [
+            "Query ranking affects which result appears first. -> 查询排序会影响哪条结果排在第一位。"
+          ]
+        }
+      ]
+    },
+    {
+      "term": "search for",
+      "sourceLanguage": "en",
+      "targetLanguage": "zh",
+      "phonetic": "/sɝːtʃ fɔːr/",
+      "tags": [
+        "language",
+        "product"
+      ],
+      "isPhrase": true,
+      "weight": 112,
+      "aliases": [
+        "look for"
+      ],
+      "senses": [
+        {
+          "definition": "查找；搜索",
+          "partOfSpeech": "v.",
+          "examples": [
+            "Search for a phrase first. -> 优先查找短语。"
+          ]
+        }
+      ]
+    },
+    {
+      "term": "split image",
+      "sourceLanguage": "en",
+      "targetLanguage": "zh",
+      "phonetic": "/splɪt ˈɪmɪdʒ/",
+      "tags": [
+        "tooling"
+      ],
+      "isPhrase": true,
+      "weight": 96,
+      "aliases": [
+        "split images"
+      ],
+      "senses": [
+        {
+          "definition": "分割图像",
+          "partOfSpeech": "v.",
+          "examples": [
+            "Split image works by grid. -> 分割图像按网格进行。"
+          ]
+        }
+      ]
+    },
+    {
+      "term": "take over",
+      "sourceLanguage": "en",
+      "targetLanguage": "zh",
+      "phonetic": "/teɪk ˈoʊvər/",
+      "tags": [
+        "product"
+      ],
+      "isPhrase": true,
+      "weight": 104,
+      "aliases": [
+        "promote result"
+      ],
+      "senses": [
+        {
+          "definition": "接管；接手",
+          "partOfSpeech": "v.",
+          "examples": [
+            "Take over the current result. -> 接管当前结果。"
+          ]
+        }
+      ]
+    },
+    {
+      "term": "tool box",
+      "sourceLanguage": "en",
+      "targetLanguage": "zh",
+      "phonetic": "/ˈtuːlbɑːks/",
+      "tags": [
+        "product"
+      ],
+      "isPhrase": true,
+      "weight": 140,
+      "aliases": [
+        "toolbox",
+        "tool-box"
+      ],
+      "senses": [
+        {
+          "definition": "工具箱",
+          "partOfSpeech": "n.",
+          "examples": [
+            "This app is a desktop tool box. -> 这个应用是一个桌面工具箱。"
+          ]
+        }
+      ]
+    },
+    {
+      "term": "turn into",
+      "sourceLanguage": "en",
+      "targetLanguage": "zh",
+      "phonetic": "/tɝːn ˈɪntuː/",
+      "tags": [
+        "product"
+      ],
+      "isPhrase": true,
+      "weight": 101,
+      "aliases": [
+        "convert to"
+      ],
+      "senses": [
+        {
+          "definition": "转为；变成",
+          "partOfSpeech": "v.",
+          "examples": [
+            "Turn the image into Base64. -> 把图像转为 Base64。"
+          ]
+        }
+      ]
+    },
+    {
+      "term": "裁切图像",
+      "sourceLanguage": "zh",
+      "targetLanguage": "en",
+      "pronunciation": "cai qie tu xiang",
+      "tags": [
+        "tooling"
+      ],
+      "isPhrase": true,
+      "weight": 90,
+      "senses": [
+        {
+          "definition": "crop image",
+          "partOfSpeech": "v.",
+          "examples": [
+            "你可以按坐标裁切图像。 -> You can crop an image by coordinates."
+          ]
+        }
+      ]
+    },
+    {
+      "term": "查询排序",
+      "sourceLanguage": "zh",
+      "targetLanguage": "en",
+      "pronunciation": "cha xun pai xu",
+      "tags": [
+        "product",
+        "search"
+      ],
+      "isPhrase": true,
+      "weight": 122,
+      "senses": [
+        {
+          "definition": "query ranking",
+          "partOfSpeech": "n.",
+          "examples": [
+            "查询排序越稳，体验越好。 -> The more stable the query ranking, the better the experience."
+          ]
+        }
+      ]
+    },
+    {
+      "term": "查找",
+      "sourceLanguage": "zh",
+      "targetLanguage": "en",
+      "pronunciation": "cha zhao",
+      "tags": [
+        "language",
+        "product"
+      ],
+      "isPhrase": true,
+      "weight": 112,
+      "aliases": [
+        "搜索"
+      ],
+      "senses": [
+        {
+          "definition": "search for; look up",
+          "partOfSpeech": "v.",
+          "examples": [
+            "先查找短语，再查单词。 -> Search for phrases before single words."
+          ]
+        }
+      ]
+    },
+    {
+      "term": "分割图像",
+      "sourceLanguage": "zh",
+      "targetLanguage": "en",
+      "pronunciation": "fen ge tu xiang",
+      "tags": [
+        "tooling"
+      ],
+      "isPhrase": true,
+      "weight": 96,
+      "senses": [
+        {
+          "definition": "split image",
+          "partOfSpeech": "v.",
+          "examples": [
+            "可以按网格分割图像。 -> You can split an image by grid."
+          ]
+        }
+      ]
+    },
+    {
+      "term": "工具箱",
+      "sourceLanguage": "zh",
+      "targetLanguage": "en",
+      "pronunciation": "gong ju xiang",
+      "tags": [
+        "product"
+      ],
+      "isPhrase": true,
+      "weight": 140,
+      "aliases": [
+        "工具盒"
+      ],
+      "senses": [
+        {
+          "definition": "tool box; toolkit",
+          "partOfSpeech": "n.",
+          "examples": [
+            "这个工具箱完全离线运行。 -> This tool box runs fully offline."
+          ]
+        }
+      ]
+    },
+    {
+      "term": "机器学习",
+      "sourceLanguage": "zh",
+      "targetLanguage": "en",
+      "pronunciation": "ji qi xue xi",
+      "tags": [
+        "tech"
+      ],
+      "isPhrase": true,
+      "weight": 116,
+      "aliases": [
+        "ML"
+      ],
+      "senses": [
+        {
+          "definition": "machine learning; ML",
+          "partOfSpeech": "n.",
+          "examples": [
+            "机器学习不是必需项。 -> Machine learning is not a requirement."
+          ]
+        }
+      ]
+    },
+    {
+      "term": "接管",
+      "sourceLanguage": "zh",
+      "targetLanguage": "en",
+      "pronunciation": "jie guan",
+      "tags": [
+        "product"
+      ],
+      "isPhrase": true,
+      "weight": 104,
+      "senses": [
+        {
+          "definition": "take over; assume control",
+          "partOfSpeech": "v.",
+          "examples": [
+            "你可以接管处理结果。 -> You can take over the processed result."
+          ]
+        }
+      ]
+    },
+    {
+      "term": "人工智能",
+      "sourceLanguage": "zh",
+      "targetLanguage": "en",
+      "pronunciation": "ren gong zhi neng",
+      "tags": [
+        "tech"
+      ],
+      "isPhrase": true,
+      "weight": 126,
+      "aliases": [
+        "AI"
+      ],
+      "senses": [
+        {
+          "definition": "artificial intelligence; AI",
+          "partOfSpeech": "n.",
+          "examples": [
+            "人工智能不是这次方案的核心。 -> Artificial intelligence is not the core of this solution."
+          ]
+        }
+      ]
+    },
+    {
+      "term": "数据结构",
+      "sourceLanguage": "zh",
+      "targetLanguage": "en",
+      "pronunciation": "shu ju jie gou",
+      "tags": [
+        "tech"
+      ],
+      "isPhrase": true,
+      "weight": 118,
+      "senses": [
+        {
+          "definition": "data structure",
+          "partOfSpeech": "n.",
+          "examples": [
+            "数据结构决定了查询性能。 -> Data structure determines lookup performance."
+          ]
+        }
+      ]
+    },
+    {
+      "term": "图像处理",
+      "sourceLanguage": "zh",
+      "targetLanguage": "en",
+      "pronunciation": "tu xiang chu li",
+      "tags": [
+        "tech",
+        "tooling"
+      ],
+      "isPhrase": true,
+      "weight": 132,
+      "senses": [
+        {
+          "definition": "image processing",
+          "partOfSpeech": "n.",
+          "examples": [
+            "图像处理由 Rust 后端完成。 -> Image processing is handled by the Rust backend."
+          ]
+        }
+      ]
+    },
+    {
+      "term": "详情面板",
+      "sourceLanguage": "zh",
+      "targetLanguage": "en",
+      "pronunciation": "xiang qing mian ban",
+      "tags": [
+        "product",
+        "ui"
+      ],
+      "isPhrase": true,
+      "weight": 118,
+      "senses": [
+        {
+          "definition": "detail panel",
+          "partOfSpeech": "n.",
+          "examples": [
+            "右侧详情面板展示当前词条。 -> The right detail panel shows the current entry."
+          ]
+        }
+      ]
+    },
+    {
+      "term": "增加水印",
+      "sourceLanguage": "zh",
+      "targetLanguage": "en",
+      "pronunciation": "zeng jia shui yin",
+      "tags": [
+        "tooling"
+      ],
+      "isPhrase": true,
+      "weight": 95,
+      "senses": [
+        {
+          "definition": "add watermark",
+          "partOfSpeech": "v.",
+          "examples": [
+            "这里可以增加水印。 -> You can add a watermark here."
+          ]
+        }
+      ]
+    },
+    {
+      "term": "转为",
+      "sourceLanguage": "zh",
+      "targetLanguage": "en",
+      "pronunciation": "zhuan wei",
+      "tags": [
+        "product"
+      ],
+      "isPhrase": true,
+      "weight": 101,
+      "aliases": [
+        "转换为"
+      ],
+      "senses": [
+        {
+          "definition": "turn into; convert to",
+          "partOfSpeech": "v.",
+          "examples": [
+            "把文本转为图像。 -> Turn the text into an image."
+          ]
+        }
+      ]
+    },
+    {
+      "term": "Base64 编码",
+      "sourceLanguage": "zh",
+      "targetLanguage": "en",
+      "pronunciation": "Base64 bian ma",
+      "tags": [
+        "tech",
+        "tooling"
+      ],
+      "isPhrase": true,
+      "weight": 92,
+      "aliases": [
+        "base64编码"
+      ],
+      "senses": [
+        {
+          "definition": "Base64 encoding",
+          "partOfSpeech": "n.",
+          "examples": [
+            "支持 Base64 编码和解码。 -> Base64 encoding and decoding are supported."
+          ]
+        }
+      ]
+    },
+    {
+      "term": "computer",
+      "sourceLanguage": "en",
+      "targetLanguage": "zh",
+      "phonetic": "/kəmˈpjuːtər/",
+      "tags": [
+        "common",
+        "tech"
+      ],
+      "aliases": [
+        "computers"
+      ],
+      "senses": [
+        {
+          "definition": "计算机；电脑",
+          "partOfSpeech": "n.",
+          "examples": [
+            "The computer runs the app locally. -> 这台计算机在本地运行应用。"
+          ]
+        }
+      ]
+    },
+    {
+      "term": "dictionary",
+      "sourceLanguage": "en",
+      "targetLanguage": "zh",
+      "phonetic": "/ˈdɪkʃəneri/",
+      "tags": [
+        "language",
+        "product"
+      ],
+      "aliases": [
+        "dictionaries"
+      ],
+      "senses": [
+        {
+          "definition": "词典；字典",
+          "partOfSpeech": "n.",
+          "examples": [
+            "A dictionary helps with offline lookup. -> 词典能帮助离线查词。"
+          ]
+        }
+      ]
+    },
+    {
+      "term": "favorite",
+      "sourceLanguage": "en",
+      "targetLanguage": "zh",
+      "phonetic": "/ˈfeɪvərɪt/",
+      "tags": [
+        "product"
+      ],
+      "aliases": [
+        "favorites"
+      ],
+      "senses": [
+        {
+          "definition": "收藏；最喜欢的内容",
+          "partOfSpeech": "n./adj.",
+          "examples": [
+            "Save it to favorites. -> 把它加入收藏。"
+          ]
+        }
+      ]
+    },
+    {
+      "term": "hello",
+      "sourceLanguage": "en",
+      "targetLanguage": "zh",
+      "phonetic": "/həˈloʊ/",
+      "tags": [
+        "common",
+        "greeting"
+      ],
+      "aliases": [
+        "hi"
+      ],
+      "senses": [
+        {
+          "definition": "你好；喂",
+          "partOfSpeech": "int.",
+          "examples": [
+            "Hello, everyone. -> 大家好。"
+          ]
+        }
+      ]
+    },
+    {
+      "term": "history",
+      "sourceLanguage": "en",
+      "targetLanguage": "zh",
+      "phonetic": "/ˈhɪstəri/",
+      "tags": [
+        "product"
+      ],
+      "aliases": [
+        "histories"
+      ],
+      "senses": [
+        {
+          "definition": "历史记录",
+          "partOfSpeech": "n.",
+          "examples": [
+            "History helps repeat common lookups. -> 历史记录有助于重复查询。"
+          ]
+        }
+      ]
+    },
+    {
+      "term": "image",
+      "sourceLanguage": "en",
+      "targetLanguage": "zh",
+      "phonetic": "/ˈɪmɪdʒ/",
+      "tags": [
+        "tooling"
+      ],
+      "aliases": [
+        "images"
+      ],
+      "senses": [
+        {
+          "definition": "图像；图片",
+          "partOfSpeech": "n.",
+          "examples": [
+            "The image preview is local. -> 图像预览是本地完成的。"
+          ]
+        }
+      ]
+    },
+    {
+      "term": "language",
+      "sourceLanguage": "en",
+      "targetLanguage": "zh",
+      "phonetic": "/ˈlæŋɡwɪdʒ/",
+      "tags": [
+        "common"
+      ],
+      "aliases": [
+        "languages"
+      ],
+      "senses": [
+        {
+          "definition": "语言",
+          "partOfSpeech": "n.",
+          "examples": [
+            "Language matters in search. -> 语言会影响检索结果。"
+          ]
+        }
+      ]
+    },
+    {
+      "term": "local",
+      "sourceLanguage": "en",
+      "targetLanguage": "zh",
+      "phonetic": "/ˈloʊkl/",
+      "tags": [
+        "product"
+      ],
+      "aliases": [
+        "locally"
+      ],
+      "senses": [
+        {
+          "definition": "本地的；本机的",
+          "partOfSpeech": "adj.",
+          "examples": [
+            "Local tools avoid network latency. -> 本地工具避免网络延迟。"
+          ]
+        }
+      ]
+    },
+    {
+      "term": "model",
+      "sourceLanguage": "en",
+      "targetLanguage": "zh",
+      "phonetic": "/ˈmɑːdl/",
+      "tags": [
+        "tech"
+      ],
+      "aliases": [
+        "models"
+      ],
+      "senses": [
+        {
+          "definition": "模型",
+          "partOfSpeech": "n.",
+          "examples": [
+            "This tool does not need a model process. -> 这个工具不需要模型进程。"
+          ]
+        }
+      ]
+    },
+    {
+      "term": "offline",
+      "sourceLanguage": "en",
+      "targetLanguage": "zh",
+      "phonetic": "/ˈɔːflaɪn/",
+      "tags": [
+        "product"
+      ],
+      "aliases": [
+        "off-line"
+      ],
+      "senses": [
+        {
+          "definition": "离线的",
+          "partOfSpeech": "adj.",
+          "examples": [
+            "Offline lookup should work after packaging. -> 离线查词在打包后也应可用。"
+          ]
+        }
+      ]
+    },
+    {
+      "term": "phrase",
+      "sourceLanguage": "en",
+      "targetLanguage": "zh",
+      "phonetic": "/freɪz/",
+      "tags": [
+        "language"
+      ],
+      "aliases": [
+        "phrases"
+      ],
+      "senses": [
+        {
+          "definition": "短语；词组",
+          "partOfSpeech": "n.",
+          "examples": [
+            "A phrase can contain multiple words. -> 短语可以包含多个单词。"
+          ]
+        }
+      ]
+    },
+    {
+      "term": "quality",
+      "sourceLanguage": "en",
+      "targetLanguage": "zh",
+      "phonetic": "/ˈkwɑːləti/",
+      "tags": [
+        "tooling"
+      ],
+      "aliases": [
+        "qualities"
+      ],
+      "senses": [
+        {
+          "definition": "质量；品质",
+          "partOfSpeech": "n.",
+          "examples": [
+            "Quality settings affect output. -> 质量设置会影响输出。"
+          ]
+        }
+      ]
+    },
+    {
+      "term": "setting",
+      "sourceLanguage": "en",
+      "targetLanguage": "zh",
+      "phonetic": "/ˈsetɪŋ/",
+      "tags": [
+        "product"
+      ],
+      "aliases": [
+        "settings"
+      ],
+      "senses": [
+        {
+          "definition": "设置",
+          "partOfSpeech": "n.",
+          "examples": [
+            "Review the settings before shipping. -> 发布前先检查设置。"
+          ]
+        }
+      ]
+    },
+    {
+      "term": "translation",
+      "sourceLanguage": "en",
+      "targetLanguage": "zh",
+      "phonetic": "/trænzˈleɪʃən/",
+      "tags": [
+        "language"
+      ],
+      "aliases": [
+        "translate",
+        "translated"
+      ],
+      "senses": [
+        {
+          "definition": "翻译；译文",
+          "partOfSpeech": "n.",
+          "examples": [
+            "The translation is clear. -> 这段翻译很清楚。"
+          ]
+        }
+      ]
+    },
+    {
+      "term": "word",
+      "sourceLanguage": "en",
+      "targetLanguage": "zh",
+      "phonetic": "/wɝːd/",
+      "tags": [
+        "common",
+        "language"
+      ],
+      "aliases": [
+        "words"
+      ],
+      "senses": [
+        {
+          "definition": "单词；词语",
+          "partOfSpeech": "n.",
+          "examples": [
+            "This word is easy to remember. -> 这个单词很容易记。"
+          ]
+        }
+      ]
+    },
+    {
+      "term": "world",
+      "sourceLanguage": "en",
+      "targetLanguage": "zh",
+      "phonetic": "/wɝːld/",
+      "tags": [
+        "common"
+      ],
+      "senses": [
+        {
+          "definition": "世界；全球",
+          "partOfSpeech": "n.",
+          "examples": [
+            "The world is changing quickly. -> 世界变化很快。"
+          ]
+        }
+      ]
+    },
+    {
+      "term": "本地",
+      "sourceLanguage": "zh",
+      "targetLanguage": "en",
+      "pronunciation": "ben di",
+      "tags": [
+        "product"
+      ],
+      "senses": [
+        {
+          "definition": "local; on-device",
+          "partOfSpeech": "adj.",
+          "examples": [
+            "本地查询更稳定。 -> Local lookup is more stable."
+          ]
+        }
+      ]
+    },
+    {
+      "term": "词典",
+      "sourceLanguage": "zh",
+      "targetLanguage": "en",
+      "pronunciation": "ci dian",
+      "tags": [
+        "language",
+        "product"
+      ],
+      "senses": [
+        {
+          "definition": "dictionary; lexicon",
+          "partOfSpeech": "n.",
+          "examples": [
+            "这本词典很适合初学者。 -> This dictionary is suitable for beginners."
+          ]
+        }
+      ]
+    },
+    {
+      "term": "单词",
+      "sourceLanguage": "zh",
+      "targetLanguage": "en",
+      "pronunciation": "dan ci",
+      "tags": [
+        "common",
+        "language"
+      ],
+      "senses": [
+        {
+          "definition": "word; vocabulary item",
+          "partOfSpeech": "n.",
+          "examples": [
+            "先学常用单词。 -> Learn common words first."
+          ]
+        }
+      ]
+    },
+    {
+      "term": "短语",
+      "sourceLanguage": "zh",
+      "targetLanguage": "en",
+      "pronunciation": "duan yu",
+      "tags": [
+        "language"
+      ],
+      "senses": [
+        {
+          "definition": "phrase; expression",
+          "partOfSpeech": "n.",
+          "examples": [
+            "这个短语很常见。 -> This phrase is common."
+          ]
+        }
+      ]
+    },
+    {
+      "term": "翻译",
+      "sourceLanguage": "zh",
+      "targetLanguage": "en",
+      "pronunciation": "fan yi",
+      "tags": [
+        "language"
+      ],
+      "senses": [
+        {
+          "definition": "translation; translate",
+          "partOfSpeech": "n./v.",
+          "examples": [
+            "这是一款离线翻译工具。 -> This is an offline translation tool."
+          ]
+        }
+      ]
+    },
+    {
+      "term": "计算机",
+      "sourceLanguage": "zh",
+      "targetLanguage": "en",
+      "pronunciation": "ji suan ji",
+      "tags": [
+        "common",
+        "tech"
+      ],
+      "senses": [
+        {
+          "definition": "computer",
+          "partOfSpeech": "n.",
+          "examples": [
+            "计算机资源是有限的。 -> Computer resources are limited."
+          ]
+        }
+      ]
+    },
+    {
+      "term": "离线",
+      "sourceLanguage": "zh",
+      "targetLanguage": "en",
+      "pronunciation": "li xian",
+      "tags": [
+        "product"
+      ],
+      "senses": [
+        {
+          "definition": "offline",
+          "partOfSpeech": "adj.",
+          "examples": [
+            "离线模式不依赖网络。 -> Offline mode does not depend on network access."
+          ]
+        }
+      ]
+    },
+    {
+      "term": "历史",
+      "sourceLanguage": "zh",
+      "targetLanguage": "en",
+      "pronunciation": "li shi",
+      "tags": [
+        "product"
+      ],
+      "senses": [
+        {
+          "definition": "history; record",
+          "partOfSpeech": "n.",
+          "examples": [
+            "可以保留查询历史。 -> It can keep lookup history."
+          ]
+        }
+      ]
+    },
+    {
+      "term": "模型",
+      "sourceLanguage": "zh",
+      "targetLanguage": "en",
+      "pronunciation": "mo xing",
+      "tags": [
+        "tech"
+      ],
+      "senses": [
+        {
+          "definition": "model",
+          "partOfSpeech": "n.",
+          "examples": [
+            "这个模型太重了。 -> This model is too heavy."
+          ]
+        }
+      ]
+    },
+    {
+      "term": "你好",
+      "sourceLanguage": "zh",
+      "targetLanguage": "en",
+      "pronunciation": "ni hao",
+      "tags": [
+        "common",
+        "greeting"
+      ],
+      "senses": [
+        {
+          "definition": "hello; hi",
+          "partOfSpeech": "int.",
+          "examples": [
+            "你好，很高兴见到你。 -> Hello, nice to meet you."
+          ]
+        }
+      ]
+    },
+    {
+      "term": "设置",
+      "sourceLanguage": "zh",
+      "targetLanguage": "en",
+      "pronunciation": "she zhi",
+      "tags": [
+        "product"
+      ],
+      "senses": [
+        {
+          "definition": "setting; configuration",
+          "partOfSpeech": "n.",
+          "examples": [
+            "这些设置保存在本地。 -> These settings are stored locally."
+          ]
+        }
+      ]
+    },
+    {
+      "term": "世界",
+      "sourceLanguage": "zh",
+      "targetLanguage": "en",
+      "pronunciation": "shi jie",
+      "tags": [
+        "common"
+      ],
+      "senses": [
+        {
+          "definition": "world; globe",
+          "partOfSpeech": "n.",
+          "examples": [
+            "世界很大。 -> The world is huge."
+          ]
+        }
+      ]
+    },
+    {
+      "term": "收藏",
+      "sourceLanguage": "zh",
+      "targetLanguage": "en",
+      "pronunciation": "shou cang",
+      "tags": [
+        "product"
+      ],
+      "senses": [
+        {
+          "definition": "favorite; bookmark",
+          "partOfSpeech": "n./v.",
+          "examples": [
+            "你可以收藏常用结果。 -> You can bookmark frequent results."
+          ]
+        }
+      ]
+    },
+    {
+      "term": "图像",
+      "sourceLanguage": "zh",
+      "targetLanguage": "en",
+      "pronunciation": "tu xiang",
+      "tags": [
+        "tooling"
+      ],
+      "senses": [
+        {
+          "definition": "image; picture",
+          "partOfSpeech": "n.",
+          "examples": [
+            "这张图像已经压缩。 -> This image has been compressed."
+          ]
+        }
+      ]
+    },
+    {
+      "term": "语言",
+      "sourceLanguage": "zh",
+      "targetLanguage": "en",
+      "pronunciation": "yu yan",
+      "tags": [
+        "common"
+      ],
+      "senses": [
+        {
+          "definition": "language",
+          "partOfSpeech": "n.",
+          "examples": [
+            "语言识别需要足够稳。 -> Language detection needs to be stable."
+          ]
+        }
+      ]
+    },
+    {
+      "term": "质量",
+      "sourceLanguage": "zh",
+      "targetLanguage": "en",
+      "pronunciation": "zhi liang",
+      "tags": [
+        "tooling"
+      ],
+      "senses": [
+        {
+          "definition": "quality",
+          "partOfSpeech": "n.",
+          "examples": [
+            "质量要优先稳定。 -> Quality should stay stable first."
+          ]
+        }
+      ]
+    }
+  ]
+}

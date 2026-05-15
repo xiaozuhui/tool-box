@@ -1,0 +1,89 @@
+[
+    {
+        "term": "query ranking",
+        "sourceLanguage": "en",
+        "targetLanguage": "zh",
+        "phonetic": "/ˈkwɪri ˈræŋkɪŋ/",
+        "tags": [
+            "product",
+            "search"
+        ],
+        "isPhrase": true,
+        "weight": 122,
+        "senses": [
+            {
+                "definition": "查询排序",
+                "partOfSpeech": "n.",
+                "examples": [
+                    "Query ranking affects which result appears first. -> 查询排序会影响哪条结果排在第一位。"
+                ]
+            }
+        ]
+    },
+    {
+        "term": "查询排序",
+        "sourceLanguage": "zh",
+        "targetLanguage": "en",
+        "pronunciation": "cha xun pai xu",
+        "tags": [
+            "product",
+            "search"
+        ],
+        "isPhrase": true,
+        "weight": 122,
+        "senses": [
+            {
+                "definition": "query ranking",
+                "partOfSpeech": "n.",
+                "examples": [
+                    "查询排序越稳，体验越好。 -> The more stable the query ranking, the better the experience."
+                ]
+            }
+        ]
+    },
+    {
+        "term": "detail panel",
+        "sourceLanguage": "en",
+        "targetLanguage": "zh",
+        "phonetic": "/ˈdiːteɪl ˈpænl/",
+        "tags": [
+            "product",
+            "ui"
+        ],
+        "isPhrase": true,
+        "weight": 118,
+        "aliases": [
+            "details panel"
+        ],
+        "senses": [
+            {
+                "definition": "详情面板",
+                "partOfSpeech": "n.",
+                "examples": [
+                    "The detail panel shows senses and examples. -> 详情面板会展示义项和例句。"
+                ]
+            }
+        ]
+    },
+    {
+        "term": "详情面板",
+        "sourceLanguage": "zh",
+        "targetLanguage": "en",
+        "pronunciation": "xiang qing mian ban",
+        "tags": [
+            "product",
+            "ui"
+        ],
+        "isPhrase": true,
+        "weight": 118,
+        "senses": [
+            {
+                "definition": "detail panel",
+                "partOfSpeech": "n.",
+                "examples": [
+                    "右侧详情面板展示当前词条。 -> The right detail panel shows the current entry."
+                ]
+            }
+        ]
+    }
+]

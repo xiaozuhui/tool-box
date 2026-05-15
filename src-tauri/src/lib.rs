@@ -2,10 +2,17 @@ use std::io::Cursor;
 
 use base64::engine::general_purpose::STANDARD;
 use base64::Engine;
+mod dictionary;
+
+use dictionary::{
+    dictionary_add_favorite, dictionary_dashboard, dictionary_history, dictionary_metadata,
+    dictionary_remove_favorite, dictionary_update_settings, query_translation, DictionaryService,
+};
 use image::codecs::jpeg::JpegEncoder;
 use image::imageops::FilterType;
-use image::{DynamicImage, GenericImageView, ImageFormat, RgbaImage};
+use image::{DynamicImage, GenericImageView, ImageFormat, Rgba, RgbaImage};
 use serde::{Deserialize, Serialize};
+use tauri::Manager;
 use thiserror::Error;
 
 #[derive(Debug, Error)]
@@ -74,6 +81,39 @@ impl WatermarkPosition {
     }
 }
 
+#[derive(Debug, Clone, Copy, Deserialize)]
+#[serde(rename_all = "camelCase")]
+enum CropMode {
+    Rectangle,
+    Ellipse,
+    Polygon,
+    SmoothPath,
+}
+
+impl Default for CropMode {
+    fn default() -> Self {
+        Self::Rectangle
+    }
+}
+
+impl CropMode {
+    fn label(self) -> &'static str {
+        match self {
+            Self::Rectangle => "矩形",
+            Self::Ellipse => "椭圆",
+            Self::Polygon => "折线闭合",
+            Self::SmoothPath => "曲线闭合",
+        }
+    }
+}
+
+#[derive(Debug, Clone, Copy, Deserialize)]
+#[serde(rename_all = "camelCase")]
+struct CropPoint {
+    x: u32,
+    y: u32,
+}
+
 #[derive(Debug, Deserialize)]
 #[serde(tag = "kind", rename_all = "camelCase")]
 enum ToolRequest {
@@ -124,6 +164,10 @@ enum ToolRequest {
         y: u32,
         width: u32,
         height: u32,
+        #[serde(default)]
+        mode: CropMode,
+        #[serde(default)]
+        points: Vec<CropPoint>,
     },
     Split {
         #[serde(rename = "sourceDataUrl")]
@@ -327,35 +371,21 @@ fn handle_request(request: ToolRequest) -> Result<ProcessResponse, ToolError> {
             y,
             width,
             height,
+            mode,
+            points,
         } => {
             let image = load_image_from_data_url(&source_data_url)?;
-            let (img_width, img_height) = image.dimensions();
-
-            if width == 0 || height == 0 {
-                return Err(ToolError::InvalidInput("裁切宽高必须大于 0".into()));
-            }
-
-            let right = x
-                .checked_add(width)
-                .ok_or_else(|| ToolError::InvalidInput("裁切区域超出图像范围".into()))?;
-            let bottom = y
-                .checked_add(height)
-                .ok_or_else(|| ToolError::InvalidInput("裁切区域超出图像范围".into()))?;
-
-            if x >= img_width || y >= img_height || right > img_width || bottom > img_height {
-                return Err(ToolError::InvalidInput("裁切区域超出图像范围".into()));
-            }
-
-            let cropped = image.crop_imm(x, y, width, height);
+            let (cropped, note) = crop_image(image, mode, x, y, width, height, &points)?;
+            let (cropped_width, cropped_height) = cropped.dimensions();
             let (bytes, mime_type) = encode_image(&cropped, OutputFormat::Png, 100)?;
             Ok(ProcessResponse {
                 primary_data_url: Some(to_data_url(&mime_type, &bytes)),
                 primary_text: None,
-                width: Some(width),
-                height: Some(height),
+                width: Some(cropped_width),
+                height: Some(cropped_height),
                 bytes: bytes.len(),
                 mime_type: Some(mime_type),
-                notes: vec![format!("已裁切区域 ({}, {}) {} × {}", x, y, width, height)],
+                notes: vec![note],
                 split_items: vec![],
             })
         }
@@ -597,6 +627,279 @@ fn resolve_position(
     (x, y)
 }
 
+fn crop_image(
+    image: DynamicImage,
+    mode: CropMode,
+    x: u32,
+    y: u32,
+    width: u32,
+    height: u32,
+    points: &[CropPoint],
+) -> Result<(DynamicImage, String), ToolError> {
+    let (img_width, img_height) = image.dimensions();
+
+    match mode {
+        CropMode::Rectangle => {
+            let (left, top, crop_width, crop_height) =
+                validate_rect_bounds(img_width, img_height, x, y, width, height)?;
+            let cropped = image.crop_imm(left, top, crop_width, crop_height);
+            Ok((
+                cropped,
+                format!(
+                    "已按{}裁切区域 ({}, {}) {} × {}",
+                    mode.label(),
+                    left,
+                    top,
+                    crop_width,
+                    crop_height
+                ),
+            ))
+        }
+        CropMode::Ellipse => {
+            let (left, top, crop_width, crop_height) =
+                validate_rect_bounds(img_width, img_height, x, y, width, height)?;
+            let source = image.to_rgba8();
+            let clipped = clip_ellipse(&source, left, top, crop_width, crop_height);
+            Ok((
+                DynamicImage::ImageRgba8(clipped),
+                format!(
+                    "已按{}裁切区域 ({}, {}) {} × {}",
+                    mode.label(),
+                    left,
+                    top,
+                    crop_width,
+                    crop_height
+                ),
+            ))
+        }
+        CropMode::Polygon | CropMode::SmoothPath => {
+            validate_points(points, img_width, img_height)?;
+            let render_points = build_render_path(points, matches!(mode, CropMode::SmoothPath));
+            let (left, top, crop_width, crop_height) = polygon_bounds(points)?;
+            let source = image.to_rgba8();
+            let clipped =
+                clip_polygon(&source, left, top, crop_width, crop_height, &render_points)?;
+            Ok((
+                DynamicImage::ImageRgba8(clipped),
+                format!(
+                    "已按{}裁切，共 {} 个锚点，输出 {} × {}",
+                    mode.label(),
+                    points.len(),
+                    crop_width,
+                    crop_height
+                ),
+            ))
+        }
+    }
+}
+
+fn validate_rect_bounds(
+    img_width: u32,
+    img_height: u32,
+    x: u32,
+    y: u32,
+    width: u32,
+    height: u32,
+) -> Result<(u32, u32, u32, u32), ToolError> {
+    if width == 0 || height == 0 {
+        return Err(ToolError::InvalidInput("裁切宽高必须大于 0".into()));
+    }
+
+    let right = x
+        .checked_add(width)
+        .ok_or_else(|| ToolError::InvalidInput("裁切区域超出图像范围".into()))?;
+    let bottom = y
+        .checked_add(height)
+        .ok_or_else(|| ToolError::InvalidInput("裁切区域超出图像范围".into()))?;
+
+    if x >= img_width || y >= img_height || right > img_width || bottom > img_height {
+        return Err(ToolError::InvalidInput("裁切区域超出图像范围".into()));
+    }
+
+    Ok((x, y, width, height))
+}
+
+fn validate_points(points: &[CropPoint], img_width: u32, img_height: u32) -> Result<(), ToolError> {
+    if points.len() < 3 {
+        return Err(ToolError::InvalidInput("自由裁切至少需要 3 个锚点".into()));
+    }
+
+    if points
+        .iter()
+        .any(|point| point.x >= img_width || point.y >= img_height)
+    {
+        return Err(ToolError::InvalidInput("自由裁切锚点超出图像范围".into()));
+    }
+
+    if polygon_area(points) < 1.0 {
+        return Err(ToolError::InvalidInput("自由裁切区域过小或锚点共线".into()));
+    }
+
+    Ok(())
+}
+
+fn polygon_area(points: &[CropPoint]) -> f32 {
+    let mut area = 0.0f32;
+    for index in 0..points.len() {
+        let current = points[index];
+        let next = points[(index + 1) % points.len()];
+        area += current.x as f32 * next.y as f32 - next.x as f32 * current.y as f32;
+    }
+    area.abs() * 0.5
+}
+
+fn polygon_bounds(points: &[CropPoint]) -> Result<(u32, u32, u32, u32), ToolError> {
+    let mut min_x = u32::MAX;
+    let mut min_y = u32::MAX;
+    let mut max_x = 0u32;
+    let mut max_y = 0u32;
+
+    for point in points {
+        min_x = min_x.min(point.x);
+        min_y = min_y.min(point.y);
+        max_x = max_x.max(point.x);
+        max_y = max_y.max(point.y);
+    }
+
+    let width = max_x
+        .checked_sub(min_x)
+        .and_then(|value| value.checked_add(1))
+        .ok_or_else(|| ToolError::InvalidInput("自由裁切区域无效".into()))?;
+    let height = max_y
+        .checked_sub(min_y)
+        .and_then(|value| value.checked_add(1))
+        .ok_or_else(|| ToolError::InvalidInput("自由裁切区域无效".into()))?;
+
+    Ok((min_x, min_y, width, height))
+}
+
+fn clip_ellipse(source: &RgbaImage, left: u32, top: u32, width: u32, height: u32) -> RgbaImage {
+    let mut output = RgbaImage::from_pixel(width, height, Rgba([0, 0, 0, 0]));
+    let radius_x = (width as f32 / 2.0).max(0.5);
+    let radius_y = (height as f32 / 2.0).max(0.5);
+    let center_x = width as f32 / 2.0;
+    let center_y = height as f32 / 2.0;
+
+    for local_y in 0..height {
+        for local_x in 0..width {
+            let norm_x = ((local_x as f32 + 0.5) - center_x) / radius_x;
+            let norm_y = ((local_y as f32 + 0.5) - center_y) / radius_y;
+            if norm_x * norm_x + norm_y * norm_y <= 1.0 {
+                let pixel = source.get_pixel(left + local_x, top + local_y);
+                output.put_pixel(local_x, local_y, *pixel);
+            }
+        }
+    }
+
+    output
+}
+
+fn build_render_path(points: &[CropPoint], smooth: bool) -> Vec<(f32, f32)> {
+    if !smooth {
+        return points
+            .iter()
+            .map(|point| (point.x as f32 + 0.5, point.y as f32 + 0.5))
+            .collect();
+    }
+
+    let mut sampled = Vec::with_capacity(points.len() * 12);
+    for index in 0..points.len() {
+        let p0 = points[(index + points.len() - 1) % points.len()];
+        let p1 = points[index];
+        let p2 = points[(index + 1) % points.len()];
+        let p3 = points[(index + 2) % points.len()];
+
+        for step in 0..12 {
+            let t = step as f32 / 12.0;
+            sampled.push(catmull_rom_point(p0, p1, p2, p3, t));
+        }
+    }
+
+    sampled
+}
+
+fn catmull_rom_point(
+    p0: CropPoint,
+    p1: CropPoint,
+    p2: CropPoint,
+    p3: CropPoint,
+    t: f32,
+) -> (f32, f32) {
+    let t2 = t * t;
+    let t3 = t2 * t;
+    let p0x = p0.x as f32;
+    let p0y = p0.y as f32;
+    let p1x = p1.x as f32;
+    let p1y = p1.y as f32;
+    let p2x = p2.x as f32;
+    let p2y = p2.y as f32;
+    let p3x = p3.x as f32;
+    let p3y = p3.y as f32;
+    let x = 0.5
+        * ((2.0 * p1x)
+            + (-p0x + p2x) * t
+            + (2.0 * p0x - 5.0 * p1x + 4.0 * p2x - p3x) * t2
+            + (-p0x + 3.0 * p1x - 3.0 * p2x + p3x) * t3);
+    let y = 0.5
+        * ((2.0 * p1y)
+            + (-p0y + p2y) * t
+            + (2.0 * p0y - 5.0 * p1y + 4.0 * p2y - p3y) * t2
+            + (-p0y + 3.0 * p1y - 3.0 * p2y + p3y) * t3);
+    (x + 0.5, y + 0.5)
+}
+
+fn clip_polygon(
+    source: &RgbaImage,
+    left: u32,
+    top: u32,
+    width: u32,
+    height: u32,
+    polygon: &[(f32, f32)],
+) -> Result<RgbaImage, ToolError> {
+    if polygon.len() < 3 {
+        return Err(ToolError::InvalidInput("自由裁切至少需要 3 个锚点".into()));
+    }
+
+    let mut output = RgbaImage::from_pixel(width, height, Rgba([0, 0, 0, 0]));
+    for local_y in 0..height {
+        for local_x in 0..width {
+            let sample_x = left as f32 + local_x as f32 + 0.5;
+            let sample_y = top as f32 + local_y as f32 + 0.5;
+            if point_in_polygon((sample_x, sample_y), polygon) {
+                let pixel = source.get_pixel(left + local_x, top + local_y);
+                output.put_pixel(local_x, local_y, *pixel);
+            }
+        }
+    }
+
+    Ok(output)
+}
+
+fn point_in_polygon(point: (f32, f32), polygon: &[(f32, f32)]) -> bool {
+    let (sample_x, sample_y) = point;
+    let mut inside = false;
+    let mut previous = polygon[polygon.len() - 1];
+
+    for &current in polygon {
+        let delta_y = previous.1 - current.1;
+        let intersects = ((current.1 > sample_y) != (previous.1 > sample_y))
+            && (sample_x
+                < (previous.0 - current.0) * (sample_y - current.1)
+                    / if delta_y.abs() < f32::EPSILON {
+                        f32::EPSILON
+                    } else {
+                        delta_y
+                    }
+                    + current.0);
+        if intersects {
+            inside = !inside;
+        }
+        previous = current;
+    }
+
+    inside
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -654,10 +957,63 @@ mod tests {
             y: 1,
             width: u32::MAX,
             height: 1,
+            mode: CropMode::Rectangle,
+            points: vec![],
         })
         .unwrap_err();
 
         assert!(matches!(error, ToolError::InvalidInput(_)));
+    }
+
+    #[test]
+    fn ellipse_crop_returns_transparent_corners() {
+        let source = sample_image_data_url(6, 6, [10, 30, 220, 255]);
+
+        let response = handle_request(ToolRequest::Crop {
+            source_data_url: source,
+            x: 0,
+            y: 0,
+            width: 6,
+            height: 6,
+            mode: CropMode::Ellipse,
+            points: vec![],
+        })
+        .unwrap();
+
+        let image = load_image_from_data_url(&response.primary_data_url.unwrap())
+            .unwrap()
+            .to_rgba8();
+        assert_eq!(image.get_pixel(0, 0)[3], 0);
+        assert_eq!(image.get_pixel(3, 3)[3], 255);
+    }
+
+    #[test]
+    fn polygon_crop_uses_anchor_bounds_and_transparency() {
+        let source = sample_image_data_url(8, 8, [255, 120, 40, 255]);
+
+        let response = handle_request(ToolRequest::Crop {
+            source_data_url: source,
+            x: 0,
+            y: 0,
+            width: 0,
+            height: 0,
+            mode: CropMode::Polygon,
+            points: vec![
+                CropPoint { x: 1, y: 1 },
+                CropPoint { x: 6, y: 1 },
+                CropPoint { x: 3, y: 6 },
+            ],
+        })
+        .unwrap();
+
+        assert_eq!(response.width, Some(6));
+        assert_eq!(response.height, Some(6));
+
+        let image = load_image_from_data_url(&response.primary_data_url.unwrap())
+            .unwrap()
+            .to_rgba8();
+        assert_eq!(image.get_pixel(0, 5)[3], 0);
+        assert_eq!(image.get_pixel(2, 1)[3], 255);
     }
 
     #[test]
@@ -723,7 +1079,21 @@ mod tests {
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     tauri::Builder::default()
-        .invoke_handler(tauri::generate_handler![process_tool])
+        .setup(|app| {
+            let dictionary_service = DictionaryService::initialize(app.handle())?;
+            app.manage(dictionary_service);
+            Ok(())
+        })
+        .invoke_handler(tauri::generate_handler![
+            process_tool,
+            dictionary_dashboard,
+            dictionary_metadata,
+            query_translation,
+            dictionary_add_favorite,
+            dictionary_remove_favorite,
+            dictionary_history,
+            dictionary_update_settings
+        ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
 }
