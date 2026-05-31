@@ -117,6 +117,8 @@ export default function TranslateWorkspace() {
     const [status, setStatus] = useState('离线词典已就绪，可直接输入中英文单词或短语。')
     const [error, setError] = useState<string | null>(null)
     const [settingsBusy, setSettingsBusy] = useState(false)
+    const [supportView, setSupportView] = useState<'history' | 'favorites'>('history')
+    const [settingsExpanded, setSettingsExpanded] = useState(false)
 
     async function refreshDashboard() {
         const next = await loadDictionaryDashboard()
@@ -253,114 +255,161 @@ export default function TranslateWorkspace() {
     const favorites = dashboard?.favorites ?? []
     const history = dashboard?.history ?? []
     const settings = dashboard?.settings
+    const defaultDirectionLabel = directionOptions.find((option) => option.value === (settings?.defaultDirection ?? 'auto'))?.label ?? '自动'
+    const resultStateLabel = busy ? '查询中' : error ? '异常' : '就绪'
+    const detailDirection = result?.direction ?? 'enToZh'
+    const supportCount = supportView === 'history' ? history.length : favorites.length
+    const selectedExampleCount = selectedEntry?.variants.reduce((count, variant) => count + variant.examples.length, 0) ?? 0
+    const selectedEntryFavorited = selectedEntry
+        ? favorites.some((item) => item.direction === detailDirection && item.translation === selectedEntry.primaryTranslation)
+        : false
 
     return (
         <main className="workspace">
-            <header className="topbar translate-topbar">
-                <div className="topbar-main">
-                    <div className="title-row">
-                        <h2>OFFLINE LEXICON</h2>
-                        <span className="active-tool-chip">
-                            {result ? directionBadge(result.direction) : '离线'} / 词典工作台
-                        </span>
-                    </div>
+            <header className="workspace-header translate-header">
+                <div className="workspace-heading">
+                    <span className="workspace-kicker">Offline lexicon</span>
+                    <h2>离线翻译</h2>
                     <p>{metadata ? `${metadata.sourceLabel} · ${metadata.entryCount} 词条 · ${metadata.phraseCount} 短语` : '正在载入词典元信息...'}</p>
                 </div>
-                <div className="toolbar-actions">
-                    <button type="button" className="secondary-button" onClick={() => void refreshDashboard()} disabled={busy || settingsBusy}>
-                        刷新
-                    </button>
+                <div className="workspace-toolbar">
+                    <div className="workspace-brief">
+                        <div className="workspace-brief-item">
+                            <span>默认方向</span>
+                            <strong>{defaultDirectionLabel}</strong>
+                            <small>{settings?.compactResultView ? '紧凑结果视图' : '标准结果视图'}</small>
+                        </div>
+                        <div className="workspace-brief-item is-status">
+                            <span>检索状态</span>
+                            <strong>{resultStateLabel}</strong>
+                            <small>{error ?? status}</small>
+                        </div>
+                    </div>
+                    <div className="toolbar-actions">
+                        <button type="button" className="secondary-button" onClick={() => void refreshDashboard()} disabled={busy || settingsBusy}>
+                            刷新词典
+                        </button>
+                    </div>
                 </div>
             </header>
 
-            <section className="signal-rack">
-                <article className="signal-cell">
-                    <span>DATA</span>
-                    <strong>{metadata ? metadata.version : '加载中'}</strong>
-                    <small>{metadata?.sourceLabel ?? '读取词典资源'}</small>
-                </article>
-                <article className="signal-cell">
-                    <span>RESULT</span>
-                    <strong>{resultItems.length || 0}</strong>
-                    <small>{result ? directionBadge(result.direction) : '等待查询'}</small>
-                </article>
-                <article className={`signal-cell ${error ? 'signal-error' : 'signal-hint'}`}>
-                    <span>LOG</span>
-                    <strong>{busy ? 'BUSY' : 'IDLE'}</strong>
-                    <small>{error ?? status}</small>
-                </article>
-            </section>
-
             <div className="translate-layout">
                 <section className="translate-column-main">
-                    <article className="preview-card translate-input-card">
-                        <div className="card-header">
-                            <h3>查询输入</h3>
-                            <span className="meta-chip">词语 / 短语</span>
-                        </div>
-                        <div className="translate-direction-row">
-                            {directionOptions.map((option) => (
-                                <button
-                                    key={option.value}
-                                    type="button"
-                                    className={option.value === direction ? 'mode-button active' : 'mode-button'}
-                                    onClick={() => setDirection(option.value)}
-                                >
-                                    {option.label}
-                                </button>
-                            ))}
-                        </div>
-                        <label className="field">
-                            <span>输入内容</span>
-                            <input
-                                value={query}
-                                onChange={(event) => setQuery(event.target.value)}
-                                onKeyDown={onInputKeyDown}
-                                placeholder="例如：toolbox / 图像处理 / artificial intelligence"
-                            />
-                        </label>
-                        <div className="translate-action-row">
-                            <button type="button" className="primary-button" onClick={() => void runLookup()} disabled={busy}>
-                                {busy ? '查询中' : '查询'}
-                            </button>
-                            <button type="button" className="secondary-button" onClick={swapDirection} disabled={busy}>
-                                切换方向
-                            </button>
-                            <button type="button" className="secondary-button" onClick={() => void copySelection()} disabled={!selectedEntry}>
-                                复制首条释义
-                            </button>
-                            <button type="button" className="secondary-button" onClick={() => void handleFavorite(selectedEntry)} disabled={!selectedEntry}>
-                                收藏当前结果
-                            </button>
-                            <button type="button" className="ghost-button" onClick={clearQuery} disabled={busy && !query}>
-                                清空
-                            </button>
-                        </div>
-                        {result?.notes.length ? (
-                            <ul className="translate-note-list">
-                                {result.notes.map((item) => (
-                                    <li key={item}>{item}</li>
+                    <section className="translate-query-grid">
+                        <article className="preview-card translate-input-card">
+                            <div className="card-header">
+                                <h3>查询输入</h3>
+                                <span className="meta-chip">词语 / 短语</span>
+                            </div>
+                            <p className="translate-card-intro">支持中英单词、短语与常见技术表达，回车可直接发起本地检索。</p>
+                            <div className="translate-direction-row">
+                                {directionOptions.map((option) => (
+                                    <button
+                                        key={option.value}
+                                        type="button"
+                                        className={option.value === direction ? 'mode-button active' : 'mode-button'}
+                                        onClick={() => setDirection(option.value)}
+                                    >
+                                        {option.label}
+                                    </button>
                                 ))}
-                            </ul>
-                        ) : null}
-                        {result?.suggestions.length ? (
-                            <div className="translate-suggestion-strip">
-                                <span className="translate-strip-label">相关表达</span>
+                            </div>
+                            <label className="field">
+                                <span>输入内容</span>
+                                <input
+                                    value={query}
+                                    onChange={(event) => setQuery(event.target.value)}
+                                    onKeyDown={onInputKeyDown}
+                                    placeholder="例如：toolbox / 图像处理 / artificial intelligence"
+                                />
+                            </label>
+                            <div className="translate-action-row">
+                                <button type="button" className="primary-button" onClick={() => void runLookup()} disabled={busy}>
+                                    {busy ? '查询中' : '开始查询'}
+                                </button>
+                                <button type="button" className="secondary-button" onClick={swapDirection} disabled={busy}>
+                                    切换方向
+                                </button>
+                                <button type="button" className="secondary-button" onClick={() => void copySelection()} disabled={!selectedEntry}>
+                                    复制首条释义
+                                </button>
+                                <button type="button" className="secondary-button" onClick={() => void handleFavorite(selectedEntry)} disabled={!selectedEntry || selectedEntryFavorited}>
+                                    {selectedEntryFavorited ? '已收藏' : '收藏当前结果'}
+                                </button>
+                                <button type="button" className="ghost-button" onClick={clearQuery} disabled={busy && !query}>
+                                    清空
+                                </button>
+                            </div>
+                            {result?.notes.length ? (
+                                <ul className="translate-note-list">
+                                    {result.notes.map((item) => (
+                                        <li key={item}>{item}</li>
+                                    ))}
+                                </ul>
+                            ) : null}
+                            {result?.suggestions.length ? (
+                                <div className="translate-suggestion-strip">
+                                    <span className="translate-strip-label">相关表达</span>
+                                    <div className="translate-chip-row">
+                                        {result.suggestions.map((item) => (
+                                            <button key={item} type="button" className="suggestion-chip" onClick={() => void runLookup(item)}>
+                                                {item}
+                                            </button>
+                                        ))}
+                                    </div>
+                                </div>
+                            ) : null}
+                        </article>
+
+                        <article className="preview-card translate-status-card">
+                            <div className="card-header">
+                                <h3>检索概览</h3>
+                                <span className="meta-chip">{result ? directionBadge(result.direction) : 'READY'}</span>
+                            </div>
+                            <div className="translate-status-grid">
+                                <article className="translate-status-cell">
+                                    <span>版本</span>
+                                    <strong>{metadata ? metadata.version : '加载中'}</strong>
+                                    <small>{metadata?.sourceLabel ?? '读取词典资源'}</small>
+                                </article>
+                                <article className="translate-status-cell">
+                                    <span>结果</span>
+                                    <strong>{resultItems.length || 0}</strong>
+                                    <small>{result ? directionBadge(result.direction) : '等待查询'}</small>
+                                </article>
+                                <article className="translate-status-cell">
+                                    <span>方向</span>
+                                    <strong>{result ? directionBadge(result.direction) : defaultDirectionLabel}</strong>
+                                    <small>{result ? result.query : '尚未发起查询'}</small>
+                                </article>
+                                <article className="translate-status-cell">
+                                    <span>更新</span>
+                                    <strong>{formatGeneratedAt(metadata?.generatedAt)}</strong>
+                                    <small>{metadata ? `${metadata.packageCount} 个数据包` : '读取中'}</small>
+                                </article>
+                            </div>
+                            {metadata?.features.length ? (
                                 <div className="translate-chip-row">
-                                    {result.suggestions.map((item) => (
-                                        <button key={item} type="button" className="suggestion-chip" onClick={() => void runLookup(item)}>
-                                            {item}
-                                        </button>
+                                    {metadata.features.map((feature) => (
+                                        <span key={feature} className="detail-chip feature-chip">{feature}</span>
                                     ))}
                                 </div>
+                            ) : null}
+                            <div className="translate-status-note">
+                                <strong>{selectedEntry ? selectedEntry.term : '检索提示'}</strong>
+                                <p>
+                                    {selectedEntry
+                                        ? `${selectedEntry.primaryTranslation}${selectedEntry.aliases.length ? ` · 别名 ${selectedEntry.aliases.slice(0, 2).join(' / ')}` : ''}`
+                                        : error ?? status}
+                                </p>
                             </div>
-                        ) : null}
-                    </article>
+                        </article>
+                    </section>
 
                     <article className="preview-card translate-results-card">
                         <div className="card-header">
                             <h3>候选结果</h3>
-                            <span className="meta-chip">{resultItems.length ? `${resultItems.length} 条` : 'EMPTY'}</span>
+                            <span className="meta-chip">{resultItems.length ? `${resultItems.length} 条` : '等待查询'}</span>
                         </div>
                         {result ? (
                             <div className="translate-overview-grid">
@@ -419,73 +468,103 @@ export default function TranslateWorkspace() {
                         )}
                     </article>
 
-                    <div className="translate-utility-grid">
-                        <article className="preview-card translate-history-card">
-                            <div className="card-header">
-                                <h3>最近查询</h3>
-                                <span className="meta-chip">{history.length}</span>
+                    <article className="preview-card translate-support-card">
+                        <div className="card-header">
+                            <h3>查询侧记</h3>
+                            <span className="meta-chip">{supportCount}</span>
+                        </div>
+                        <div className="translate-support-overview">
+                            <article className="translate-support-pill">
+                                <span>最近查询</span>
+                                <strong>{history.length}</strong>
+                                <small>保留回放路径与命中数量</small>
+                            </article>
+                            <article className="translate-support-pill">
+                                <span>收藏夹</span>
+                                <strong>{favorites.length}</strong>
+                                <small>保留常用词条与当前方向</small>
+                            </article>
+                        </div>
+                        <div className="translate-support-toolbar">
+                            <div className="translate-support-switch">
+                                <button
+                                    type="button"
+                                    className={supportView === 'history' ? 'support-switch-button active' : 'support-switch-button'}
+                                    onClick={() => setSupportView('history')}
+                                >
+                                    最近查询
+                                </button>
+                                <button
+                                    type="button"
+                                    className={supportView === 'favorites' ? 'support-switch-button active' : 'support-switch-button'}
+                                    onClick={() => setSupportView('favorites')}
+                                >
+                                    收藏夹
+                                </button>
                             </div>
-                            {history.length ? (
-                                <div className="translate-utility-list">
+                            <p>{supportView === 'history' ? '点击记录可直接回放查询路径。' : '收藏会保留查询方向和首条释义。'}</p>
+                        </div>
+
+                        {supportView === 'history' ? (
+                            history.length ? (
+                                <div className="translate-support-list">
                                     {history.map((item) => (
                                         <button
                                             key={item.id}
                                             type="button"
-                                            className="utility-list-item"
+                                            className="utility-list-item support-item"
                                             onClick={() => {
                                                 setQuery(item.query)
                                                 setDirection(item.direction)
                                                 void runLookup(item.query, item.direction)
                                             }}
                                         >
-                                            <strong>{item.query}</strong>
-                                            <span>{directionBadge(item.direction)} · {item.resultCount} 条 · {formatTime(item.createdAt)}</span>
+                                            <div className="support-item-head">
+                                                <strong>{item.query}</strong>
+                                                <span className="support-item-time">{formatTime(item.createdAt)}</span>
+                                            </div>
+                                            <span>{directionBadge(item.direction)} · {item.resultCount} 条结果</span>
                                         </button>
                                     ))}
                                 </div>
                             ) : (
-                                <div className="empty-state subtle compact-empty">
-                                    <strong>NO HISTORY</strong>
-                                    <p>查询后会自动记录</p>
+                                <div className="empty-state subtle compact-empty support-empty-state">
+                                    <strong>暂无历史</strong>
+                                    <p>开始一次查询后，这里会保留最近检索轨迹。</p>
                                 </div>
-                            )}
-                        </article>
-
-                        <article className="preview-card translate-favorite-card">
-                            <div className="card-header">
-                                <h3>收藏夹</h3>
-                                <span className="meta-chip">{favorites.length}</span>
-                            </div>
-                            {favorites.length ? (
-                                <div className="translate-utility-list">
-                                    {favorites.map((item) => (
-                                        <div key={item.id} className="favorite-list-item">
-                                            <button
-                                                type="button"
-                                                className="utility-list-item"
-                                                onClick={() => {
-                                                    setQuery(item.query)
-                                                    setDirection(item.direction)
-                                                    void runLookup(item.query, item.direction)
-                                                }}
-                                            >
+                            )
+                        ) : favorites.length ? (
+                            <div className="translate-support-list">
+                                {favorites.map((item) => (
+                                    <div key={item.id} className="favorite-list-item support-favorite-item">
+                                        <button
+                                            type="button"
+                                            className="utility-list-item support-item"
+                                            onClick={() => {
+                                                setQuery(item.query)
+                                                setDirection(item.direction)
+                                                void runLookup(item.query, item.direction)
+                                            }}
+                                        >
+                                            <div className="support-item-head">
                                                 <strong>{item.query}</strong>
-                                                <span>{item.translation}</span>
-                                            </button>
-                                            <button type="button" className="ghost-button" onClick={() => void handleRemoveFavorite(item)}>
-                                                移除
-                                            </button>
-                                        </div>
-                                    ))}
-                                </div>
-                            ) : (
-                                <div className="empty-state subtle compact-empty">
-                                    <strong>NO FAVORITES</strong>
-                                    <p>选中结果后可以直接收藏</p>
-                                </div>
-                            )}
-                        </article>
-                    </div>
+                                                <span className="support-item-time">{directionBadge(item.direction)}</span>
+                                            </div>
+                                            <span>{item.translation}</span>
+                                        </button>
+                                        <button type="button" className="ghost-button support-remove-button" onClick={() => void handleRemoveFavorite(item)}>
+                                            移除
+                                        </button>
+                                    </div>
+                                ))}
+                            </div>
+                        ) : (
+                            <div className="empty-state subtle compact-empty support-empty-state">
+                                <strong>暂无收藏</strong>
+                                <p>选中候选后可随时加入收藏，便于回放常用词条。</p>
+                            </div>
+                        )}
+                    </article>
                 </section>
 
                 <aside className="panel translate-side-panel">
@@ -494,6 +573,7 @@ export default function TranslateWorkspace() {
                             <h3>词条详情</h3>
                             <span className="panel-chip">{selectedEntry ? directionBadge(result?.direction ?? 'enToZh') : 'WAIT'}</span>
                         </div>
+                        <p>{selectedEntry ? `${selectedEntry.variants.length} 条义项 · ${selectedEntry.aliases.length} 个别名` : '从左侧结果里选择一条词条，查看释义、例句和本地设置。'}</p>
                     </header>
 
                     {selectedEntry ? (
@@ -503,15 +583,13 @@ export default function TranslateWorkspace() {
                                     <strong>{selectedEntry.term}</strong>
                                     <span>{selectedEntry.primaryTranslation}</span>
                                 </div>
-                                <div className="translate-chip-row detail-chip-row">
-                                    {selectedEntry.tags.map((tag) => (
-                                        <span key={tag} className="detail-chip">{tag}</span>
-                                    ))}
-                                    {selectedEntry.aliases.map((alias) => (
-                                        <button key={alias} type="button" className="detail-chip alias-chip" onClick={() => void runLookup(alias)}>
-                                            {alias}
-                                        </button>
-                                    ))}
+                                <div className="detail-action-row">
+                                    <button type="button" className="secondary-button" onClick={() => void copySelection()}>
+                                        复制释义
+                                    </button>
+                                    <button type="button" className="secondary-button" onClick={() => void handleFavorite(selectedEntry)} disabled={selectedEntryFavorited}>
+                                        {selectedEntryFavorited ? '已收藏' : '收藏词条'}
+                                    </button>
                                 </div>
                                 <div className="detail-meta-grid">
                                     <div className="signal-cell compact-signal">
@@ -524,16 +602,67 @@ export default function TranslateWorkspace() {
                                         <strong>{selectedEntry.phonetic ?? selectedEntry.pronunciation ?? '—'}</strong>
                                         <small>{selectedEntry.sourceLanguage} → {selectedEntry.targetLanguage}</small>
                                     </div>
+                                    <div className="signal-cell compact-signal">
+                                        <span>ALIAS</span>
+                                        <strong>{selectedEntry.aliases.length}</strong>
+                                        <small>{selectedEntry.aliases.length ? '可作为快捷检索入口' : '当前无别名'}</small>
+                                    </div>
+                                    <div className="signal-cell compact-signal">
+                                        <span>EXAMPLE</span>
+                                        <strong>{selectedExampleCount}</strong>
+                                        <small>{selectedEntry.variants.length} 条义项中的例句总数</small>
+                                    </div>
+                                </div>
+                            </section>
+
+                            <section className="panel-section detail-context">
+                                <div className="section-heading">
+                                    <h3>词条线索</h3>
+                                    <span className="panel-chip">{selectedEntry.tags.length + selectedEntry.aliases.length}</span>
+                                </div>
+                                <div className="detail-group">
+                                    <span className="detail-group-label">标签</span>
+                                    <div className="translate-chip-row detail-chip-row">
+                                        {selectedEntry.tags.length ? (
+                                            selectedEntry.tags.map((tag) => (
+                                                <span key={tag} className="detail-chip">{tag}</span>
+                                            ))
+                                        ) : (
+                                            <span className="detail-chip detail-chip-muted">暂无标签</span>
+                                        )}
+                                    </div>
+                                </div>
+                                <div className="detail-group">
+                                    <span className="detail-group-label">别名</span>
+                                    <div className="translate-chip-row detail-chip-row">
+                                        {selectedEntry.aliases.length ? (
+                                            selectedEntry.aliases.map((alias) => (
+                                                <button key={alias} type="button" className="detail-chip alias-chip" onClick={() => void runLookup(alias)}>
+                                                    {alias}
+                                                </button>
+                                            ))
+                                        ) : (
+                                            <span className="detail-chip detail-chip-muted">暂无别名</span>
+                                        )}
+                                    </div>
                                 </div>
                             </section>
 
                             <section className="panel-section detail-variants">
-                                <h3>义项与例句</h3>
-                                {selectedEntry.variants.map((variant) => (
+                                <div className="section-heading">
+                                    <h3>义项与例句</h3>
+                                    <span className="panel-chip">{selectedEntry.variants.length}</span>
+                                </div>
+                                {selectedEntry.variants.map((variant, index) => (
                                     <article key={variant.id} className="detail-variant-card">
                                         <div className="detail-variant-head">
                                             <strong>{variant.definition}</strong>
-                                            <span>{variant.partOfSpeech ?? 'sense'}</span>
+                                            <span>{variant.partOfSpeech ?? `sense ${index + 1}`}</span>
+                                        </div>
+                                        <div className="detail-variant-meta">
+                                            <span>序号 {index + 1}</span>
+                                            <span>评分 {variant.score.toFixed(1)}</span>
+                                            <span>{variant.examples.length ? `${variant.examples.length} 条例句` : '暂无例句'}</span>
                                         </div>
                                         {variant.examples.length ? (
                                             <ul className="translate-note-list compact-note-list">
@@ -556,7 +685,9 @@ export default function TranslateWorkspace() {
                     <section className="panel-section detail-settings">
                         <div className="section-heading">
                             <h3>本地设置</h3>
-                            <span className="panel-chip">LOCAL</span>
+                            <button type="button" className="ghost-button detail-settings-toggle" onClick={() => setSettingsExpanded((current) => !current)}>
+                                {settingsExpanded ? '收起' : '展开'}
+                            </button>
                         </div>
                         <div className="settings-summary-card">
                             <strong>{metadata?.sourceLabel ?? '离线词典'}</strong>
@@ -570,49 +701,55 @@ export default function TranslateWorkspace() {
                                 ))}
                             </div>
                         ) : null}
-                        <label className="field checkbox-field">
-                            <span>默认方向</span>
-                            <select
-                                value={settings?.defaultDirection ?? 'auto'}
-                                onChange={(event) => void patchSettings({ defaultDirection: event.target.value as QueryDirection })}
-                                disabled={settingsBusy}
-                            >
-                                {directionOptions.map((option) => (
-                                    <option key={option.value} value={option.value}>
-                                        {option.label} · {option.description}
-                                    </option>
-                                ))}
-                            </select>
-                        </label>
-                        <label className="toggle-field">
-                            <span>查询后自动复制首条释义</span>
-                            <input
-                                type="checkbox"
-                                checked={settings?.autoCopyPrimary ?? false}
-                                onChange={(event) => void patchSettings({ autoCopyPrimary: event.target.checked })}
-                                disabled={settingsBusy}
-                            />
-                        </label>
-                        <label className="toggle-field">
-                            <span>紧凑结果视图</span>
-                            <input
-                                type="checkbox"
-                                checked={settings?.compactResultView ?? false}
-                                onChange={(event) => void patchSettings({ compactResultView: event.target.checked })}
-                                disabled={settingsBusy}
-                            />
-                        </label>
-                        <label className="field">
-                            <span>历史条数上限</span>
-                            <input
-                                type="number"
-                                min="10"
-                                max="200"
-                                value={settings?.maxHistoryItems ?? 40}
-                                onChange={(event) => void patchSettings({ maxHistoryItems: Math.max(10, Number(event.target.value) || 40) })}
-                                disabled={settingsBusy}
-                            />
-                        </label>
+                        {settingsExpanded ? (
+                            <>
+                                <label className="field checkbox-field">
+                                    <span>默认方向</span>
+                                    <select
+                                        value={settings?.defaultDirection ?? 'auto'}
+                                        onChange={(event) => void patchSettings({ defaultDirection: event.target.value as QueryDirection })}
+                                        disabled={settingsBusy}
+                                    >
+                                        {directionOptions.map((option) => (
+                                            <option key={option.value} value={option.value}>
+                                                {option.label} · {option.description}
+                                            </option>
+                                        ))}
+                                    </select>
+                                </label>
+                                <label className="toggle-field">
+                                    <span>查询后自动复制首条释义</span>
+                                    <input
+                                        type="checkbox"
+                                        checked={settings?.autoCopyPrimary ?? false}
+                                        onChange={(event) => void patchSettings({ autoCopyPrimary: event.target.checked })}
+                                        disabled={settingsBusy}
+                                    />
+                                </label>
+                                <label className="toggle-field">
+                                    <span>紧凑结果视图</span>
+                                    <input
+                                        type="checkbox"
+                                        checked={settings?.compactResultView ?? false}
+                                        onChange={(event) => void patchSettings({ compactResultView: event.target.checked })}
+                                        disabled={settingsBusy}
+                                    />
+                                </label>
+                                <label className="field">
+                                    <span>历史条数上限</span>
+                                    <input
+                                        type="number"
+                                        min="10"
+                                        max="200"
+                                        value={settings?.maxHistoryItems ?? 40}
+                                        onChange={(event) => void patchSettings({ maxHistoryItems: Math.max(10, Number(event.target.value) || 40) })}
+                                        disabled={settingsBusy}
+                                    />
+                                </label>
+                            </>
+                        ) : (
+                            <p className="detail-settings-note">需要调整默认方向、自动复制或历史条数时，再展开本地设置。</p>
+                        )}
                     </section>
                 </aside>
             </div>

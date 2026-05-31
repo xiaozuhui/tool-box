@@ -80,6 +80,10 @@ const tools: Array<{
         },
     ]
 
+const defaultEnhanceSettings = { contrast: 16, brighten: 4, sharpen: 1.2, saturation: 1.08 }
+const defaultCompressSettings = { format: 'jpeg' as ImageFormat, quality: 78, maxWidth: 1600 }
+const defaultSplitSettings = { rows: 2, cols: 2 }
+
 const watermarkPositions: Array<{ value: WatermarkPosition; label: string }> = [
     { value: 'topLeft', label: '左上' },
     { value: 'topCenter', label: '上中' },
@@ -329,8 +333,8 @@ function App() {
     const [encodeFormat, setEncodeFormat] = useState<ImageFormat>('png')
     const [decodeInput, setDecodeInput] = useState('')
     const [decodeFormat, setDecodeFormat] = useState<'auto' | ImageFormat>('auto')
-    const [enhance, setEnhance] = useState({ contrast: 16, brighten: 4, sharpen: 1.2, saturation: 1.08 })
-    const [compress, setCompress] = useState({ format: 'jpeg' as ImageFormat, quality: 78, maxWidth: 1600 })
+    const [enhance, setEnhance] = useState({ ...defaultEnhanceSettings })
+    const [compress, setCompress] = useState({ ...defaultCompressSettings })
     const [watermarkMode, setWatermarkMode] = useState<'text' | 'image'>('text')
     const [watermarkText, setWatermarkText] = useState('Tool Box')
     const [watermarkScale, setWatermarkScale] = useState(24)
@@ -344,7 +348,7 @@ function App() {
     const [cropPathClosed, setCropPathClosed] = useState(true)
     const [selectedCropPointIndex, setSelectedCropPointIndex] = useState<number | null>(null)
     const [cropAspectMode, setCropAspectMode] = useState<CropAspectMode>('free')
-    const [split, setSplit] = useState({ rows: 2, cols: 2 })
+    const [split, setSplit] = useState({ ...defaultSplitSettings })
     const [cropPreviewFrameSize, setCropPreviewFrameSize] = useState({ width: 0, height: 0 })
 
     const selectedToolMeta = tools.find((tool) => tool.id === selectedTool)!
@@ -526,6 +530,54 @@ function App() {
                 cols: clamp(next.cols, 1, Math.max(1, sourceAsset.width)),
             }
         })
+    }
+
+    function applyEnhancePreset(preset: 'balanced' | 'clarity' | 'vivid' | 'reset') {
+        if (preset === 'balanced') {
+            setEnhance({ contrast: 16, brighten: 4, sharpen: 1.2, saturation: 1.08 })
+            return
+        }
+        if (preset === 'clarity') {
+            setEnhance({ contrast: 22, brighten: 2, sharpen: 1.8, saturation: 1.02 })
+            return
+        }
+        if (preset === 'vivid') {
+            setEnhance({ contrast: 18, brighten: 6, sharpen: 1.4, saturation: 1.2 })
+            return
+        }
+        setEnhance({ ...defaultEnhanceSettings })
+    }
+
+    function applyCompressPreset(preset: 'share' | 'balanced' | 'webp' | 'reset') {
+        if (preset === 'share') {
+            setCompress({
+                format: 'jpeg',
+                quality: 72,
+                maxWidth: sourceAsset ? Math.min(sourceAsset.width, 1280) : 1280,
+            })
+            return
+        }
+        if (preset === 'balanced') {
+            setCompress({
+                format: 'jpeg',
+                quality: 82,
+                maxWidth: sourceAsset ? Math.min(sourceAsset.width, 1920) : 1920,
+            })
+            return
+        }
+        if (preset === 'webp') {
+            setCompress({
+                format: 'webp',
+                quality: 86,
+                maxWidth: sourceAsset ? Math.min(sourceAsset.width, 1920) : 1920,
+            })
+            return
+        }
+        setCompress({ ...defaultCompressSettings })
+    }
+
+    function applySplitPreset(size: number) {
+        updateSplit({ rows: size, cols: size })
     }
 
     function clampCropPoint(point: CropPoint, allowEdge = false) {
@@ -948,7 +1000,7 @@ function App() {
 
     const validationError = getValidationError()
     const toolHint = getToolHint()
-    const canExecute = !busy
+    const canExecute = !busy && !validationError
     const runtimeState = busy ? 'BUSY' : 'IDLE'
     const noticeTone = validationError ? 'error' : toolHint ? 'hint' : 'neutral'
     const noticeText = validationError ?? toolHint
@@ -960,27 +1012,50 @@ function App() {
             : 'No output'
     const assetName = sourceAsset?.name ?? '等待载入图像'
     const resultMeta = result?.mimeType ?? '尚无结果'
+    const sourceReady = !selectedToolMeta.requiresSource || Boolean(sourceAsset)
+    const resultReady = Boolean(result?.primaryDataUrl || result?.primaryText || result?.splitItems.length)
     const hasComparablePreview = Boolean(sourceAsset && result?.primaryDataUrl)
+    const nextStepText = !sourceReady
+        ? '先载入一张图片，工作台会自动同步尺寸、裁切范围和导出状态。'
+        : validationError
+            ? validationError
+            : resultReady
+                ? '结果已生成，可直接导出，或接管为新的源图继续连续处理。'
+                : `参数已就绪，运行 ${selectedToolMeta.label} 后会在左侧即时预览结果。`
+    const runButtonLabel = busy
+        ? '运行中'
+        : !sourceReady
+            ? '先载入图片'
+            : validationError
+                ? '参数未完成'
+                : `运行 ${selectedToolMeta.label}`
+    const previewEmptyTitle = selectedTool === 'base64Decode' ? '准备 Base64 文本' : '准备源图'
+    const previewEmptyDescription = selectedTool === 'base64Decode'
+        ? '在右侧粘贴 Data URL 或纯 Base64，运行后这里会生成图像预览。'
+        : '拖入图片或从本地载入，工作台会自动同步参数边界与结果状态。'
+    const previewSupportText = selectedTool === 'base64Decode'
+        ? '支持 data:image/...;base64 和纯 Base64 字符串。'
+        : '支持 PNG / JPEG / WebP。'
     const activePreviewLabel = selectedTool === 'crop'
         ? '裁切编辑'
         : hasComparablePreview
             ? '拖拽对比'
             : result?.primaryDataUrl || result?.splitItems.length
-            ? '结果预览'
-            : '图像预览'
+                ? '结果预览'
+                : '图像预览'
     const activePreviewMeta = selectedTool === 'crop'
         ? `${cropModes.find((item) => item.value === cropMode)?.label ?? '裁切'}${cropPathStateLabel ? ` / ${cropPathStateLabel}` : ''} / ${cropOutlineLabel}`
         : hasComparablePreview
             ? `${comparePosition}% / ${100 - comparePosition}%`
             : result?.primaryDataUrl
-            ? result?.width && result?.height
-                ? `${result.width} × ${result.height}`
-                : null
-            : result?.splitItems.length
-                ? `${result.splitItems.length} 项`
-                : sourceAsset
-                    ? `${sourceAsset.width} × ${sourceAsset.height}`
+                ? result?.width && result?.height
+                    ? `${result.width} × ${result.height}`
                     : null
+                : result?.splitItems.length
+                    ? `${result.splitItems.length} 项`
+                    : sourceAsset
+                        ? `${sourceAsset.width} × ${sourceAsset.height}`
+                        : null
 
     async function buildRequest(): Promise<ToolRequest> {
         switch (selectedTool) {
@@ -1153,7 +1228,16 @@ function App() {
             case 'enhance':
                 return (
                     <section className="panel-section stack-gap">
-                        <h3>增强参数</h3>
+                        <div className="section-heading">
+                            <h3>增强参数</h3>
+                            <span className="panel-chip">Preset</span>
+                        </div>
+                        <div className="preset-grid">
+                            <button type="button" className="ghost-button preset-button" onClick={() => applyEnhancePreset('balanced')}>均衡</button>
+                            <button type="button" className="ghost-button preset-button" onClick={() => applyEnhancePreset('clarity')}>清晰</button>
+                            <button type="button" className="ghost-button preset-button" onClick={() => applyEnhancePreset('vivid')}>鲜明</button>
+                            <button type="button" className="ghost-button preset-button" onClick={() => applyEnhancePreset('reset')}>恢复默认</button>
+                        </div>
                         <label className="field">
                             <span>对比度</span>
                             <input type="range" min="-30" max="40" value={enhance.contrast} onChange={(event) => setEnhance((current) => ({ ...current, contrast: Number(event.target.value) }))} />
@@ -1179,7 +1263,16 @@ function App() {
             case 'compress':
                 return (
                     <section className="panel-section stack-gap">
-                        <h3>压缩参数</h3>
+                        <div className="section-heading">
+                            <h3>压缩参数</h3>
+                            <span className="panel-chip">Preset</span>
+                        </div>
+                        <div className="preset-grid">
+                            <button type="button" className="ghost-button preset-button" onClick={() => applyCompressPreset('share')}>分享图</button>
+                            <button type="button" className="ghost-button preset-button" onClick={() => applyCompressPreset('balanced')}>均衡图</button>
+                            <button type="button" className="ghost-button preset-button" onClick={() => applyCompressPreset('webp')}>高清 WebP</button>
+                            <button type="button" className="ghost-button preset-button" onClick={() => applyCompressPreset('reset')}>恢复默认</button>
+                        </div>
                         <label className="field">
                             <span>输出格式</span>
                             <select value={compress.format} onChange={(event) => setCompress((current) => ({ ...current, format: event.target.value as ImageFormat }))}>
@@ -1347,6 +1440,12 @@ function App() {
                 return (
                     <section className="panel-section compact-grid">
                         <h3>网格拆分</h3>
+                        <div className="preset-grid compact-grid-span">
+                            <button type="button" className="ghost-button preset-button" onClick={() => applySplitPreset(2)} disabled={!sourceAsset}>2 × 2</button>
+                            <button type="button" className="ghost-button preset-button" onClick={() => applySplitPreset(3)} disabled={!sourceAsset}>3 × 3</button>
+                            <button type="button" className="ghost-button preset-button" onClick={() => applySplitPreset(4)} disabled={!sourceAsset}>4 × 4</button>
+                            <button type="button" className="ghost-button preset-button" onClick={() => updateSplit({ ...defaultSplitSettings })} disabled={!sourceAsset}>恢复默认</button>
+                        </div>
                         <label className="field">
                             <span>行数</span>
                             <input type="number" min="1" max={sourceAsset ? splitRowsMax : undefined} value={split.rows} onChange={(event) => updateSplit({ rows: Math.max(1, toInteger(event.target.value, split.rows)) })} />
@@ -1369,95 +1468,118 @@ function App() {
                 <div className="brand-block">
                     <span className="brand-mark">TB</span>
                     <div className="brand-copy">
-                        <h1>TOOL BOX</h1>
-                        <span className="runtime-pill">LOCAL</span>
+                        <span className="brand-eyebrow">Local desktop suite</span>
+                        <h1>Tool Box</h1>
+                        <p>把图像处理和离线翻译整理成更稳定的桌面工作台，而不是展示型首页。</p>
                     </div>
                 </div>
 
-                <div className="workspace-switch">
-                    <button
-                        type="button"
-                        className={workspaceMode === 'image' ? 'workspace-switch-button active' : 'workspace-switch-button'}
-                        onClick={() => setWorkspaceMode('image')}
-                    >
-                        图像工具箱
-                    </button>
-                    <button
-                        type="button"
-                        className={workspaceMode === 'translate' ? 'workspace-switch-button active' : 'workspace-switch-button'}
-                        onClick={() => setWorkspaceMode('translate')}
-                    >
-                        离线翻译
-                    </button>
-                </div>
+                <section className="sidebar-group">
+                    <div className="sidebar-section-header">
+                        <span>工作区</span>
+                        <span>2 项</span>
+                    </div>
+                    <div className="workspace-switch">
+                        <button
+                            type="button"
+                            className={workspaceMode === 'image' ? 'workspace-switch-button active' : 'workspace-switch-button'}
+                            onClick={() => setWorkspaceMode('image')}
+                        >
+                            图像工具箱
+                        </button>
+                        <button
+                            type="button"
+                            className={workspaceMode === 'translate' ? 'workspace-switch-button active' : 'workspace-switch-button'}
+                            onClick={() => setWorkspaceMode('translate')}
+                        >
+                            离线翻译
+                        </button>
+                    </div>
+                </section>
 
                 <div className="sidebar-section">
                     {workspaceMode === 'image' ? (
-                        <div className="tool-directory">
-                            <button
-                                type="button"
-                                className={toolDirectoryOpen ? 'directory-button active' : 'directory-button'}
-                                onClick={() => setToolDirectoryOpen((current) => !current)}
-                            >
-                                <span className="directory-meta">
-                                    <span className="tool-icon">▣</span>
-                                    <span className="directory-label-group">
-                                        <strong className="tool-label">图像工具</strong>
-                                        <span className="directory-count">{tools.length} 项</span>
+                        <section className="sidebar-group">
+                            <div className="sidebar-section-header">
+                                <span>工具目录</span>
+                                <span>{tools.length} 项</span>
+                            </div>
+                            <div className="tool-directory">
+                                <button
+                                    type="button"
+                                    className={toolDirectoryOpen ? 'directory-button active' : 'directory-button'}
+                                    onClick={() => setToolDirectoryOpen((current) => !current)}
+                                >
+                                    <span className="directory-meta">
+                                        <span className="tool-icon">▣</span>
+                                        <span className="directory-label-group">
+                                            <strong className="tool-label">图像工具</strong>
+                                            <span className="directory-count">参数与预览联动</span>
+                                        </span>
                                     </span>
-                                </span>
-                                <span className="directory-chevron">{toolDirectoryOpen ? '−' : '+'}</span>
-                            </button>
+                                    <span className="directory-chevron">{toolDirectoryOpen ? '−' : '+'}</span>
+                                </button>
 
-                            {toolDirectoryOpen ? (
-                                <nav className="tool-list directory-children">
-                                    {tools.map((tool) => (
-                                        <button
-                                            key={tool.id}
-                                            type="button"
-                                            title={tool.summary}
-                                            className={tool.id === selectedTool ? 'tool-button active' : 'tool-button'}
-                                            onClick={() => {
-                                                setSelectedTool(tool.id)
-                                                setStatus(tool.summary)
-                                            }}
-                                        >
-                                            <span className="tool-icon">{tool.icon}</span>
-                                            <strong className="tool-label">{tool.label}</strong>
-                                            <span className="tool-badge">{tool.badge ?? tool.id}</span>
-                                        </button>
-                                    ))}
-                                </nav>
-                            ) : null}
-                        </div>
+                                {toolDirectoryOpen ? (
+                                    <nav className="tool-list directory-children">
+                                        {tools.map((tool) => (
+                                            <button
+                                                key={tool.id}
+                                                type="button"
+                                                title={tool.summary}
+                                                className={tool.id === selectedTool ? 'tool-button active' : 'tool-button'}
+                                                onClick={() => {
+                                                    setSelectedTool(tool.id)
+                                                    setStatus(tool.summary)
+                                                }}
+                                            >
+                                                <span className="tool-icon">{tool.icon}</span>
+                                                <strong className="tool-label">{tool.label}</strong>
+                                                <span className="tool-badge">{tool.badge ?? tool.id}</span>
+                                            </button>
+                                        ))}
+                                    </nav>
+                                ) : null}
+                            </div>
+                        </section>
                     ) : (
-                        <div className="translate-sidebar-stack">
-                            <article className="sidebar-note-card">
-                                <span className="tool-icon">字</span>
-                                <div className="sidebar-note-copy">
-                                    <strong>中英互译</strong>
-                                    <p>面向单词和短语，优先离线词典与短语表。</p>
-                                </div>
-                            </article>
-                            <article className="sidebar-note-card">
-                                <span className="tool-icon">离</span>
-                                <div className="sidebar-note-copy">
-                                    <strong>本地直用</strong>
-                                    <p>无额外模型进程，查询命令直接由 Rust 词典服务处理。</p>
-                                </div>
-                            </article>
-                            <article className="sidebar-note-card">
-                                <span className="tool-icon">藏</span>
-                                <div className="sidebar-note-copy">
-                                    <strong>收藏与历史</strong>
-                                    <p>结果支持收藏、回放和本地设置持久化。</p>
-                                </div>
-                            </article>
-                        </div>
+                        <section className="sidebar-group">
+                            <div className="sidebar-section-header">
+                                <span>词典特性</span>
+                                <span>本地</span>
+                            </div>
+                            <div className="translate-sidebar-stack">
+                                <article className="sidebar-note-card">
+                                    <span className="tool-icon">字</span>
+                                    <div className="sidebar-note-copy">
+                                        <strong>中英互译</strong>
+                                        <p>面向单词和短语，优先离线词典与短语表。</p>
+                                    </div>
+                                </article>
+                                <article className="sidebar-note-card">
+                                    <span className="tool-icon">离</span>
+                                    <div className="sidebar-note-copy">
+                                        <strong>本地直用</strong>
+                                        <p>无额外模型进程，查询命令直接由 Rust 词典服务处理。</p>
+                                    </div>
+                                </article>
+                                <article className="sidebar-note-card">
+                                    <span className="tool-icon">藏</span>
+                                    <div className="sidebar-note-copy">
+                                        <strong>收藏与历史</strong>
+                                        <p>结果支持收藏、回放和本地设置持久化。</p>
+                                    </div>
+                                </article>
+                            </div>
+                        </section>
                     )}
                 </div>
 
                 <div className="sidebar-console">
+                    <div className="sidebar-section-header sidebar-section-subtle">
+                        <span>当前上下文</span>
+                        <span>{workspaceMode === 'image' ? '图像' : '翻译'}</span>
+                    </div>
                     <div className="console-row">
                         <span>STATE</span>
                         <strong>{workspaceMode === 'image' ? runtimeState : 'LEXICON'}</strong>
@@ -1474,36 +1596,46 @@ function App() {
             </aside>
 
             {workspaceMode === 'image' ? (
-                <main className="workspace">
-                    <header className="topbar">
-                        <div className="topbar-main">
-                            <div className="title-row">
-                                <h2>IMAGE OPS</h2>
-                                <span className="active-tool-chip">
-                                    {selectedToolMeta.badge} / {selectedToolMeta.label}
-                                </span>
-                            </div>
+                <main className="workspace image-workspace">
+                    <header className="workspace-header">
+                        <div className="workspace-heading">
+                            <span className="workspace-kicker">Image workspace</span>
+                            <h2>{selectedToolMeta.label}</h2>
+                            <p>{selectedToolMeta.summary}</p>
                         </div>
-                        <div className="toolbar-actions">
-                            <button type="button" className="secondary-button" onClick={() => sourceInputRef.current?.click()}>
-                                载入
-                            </button>
+                        <div className="workspace-toolbar">
+                            <div className="workspace-brief">
+                                <div className="workspace-brief-item">
+                                    <span>当前工具</span>
+                                    <strong>{selectedToolMeta.badge} / {selectedToolMeta.label}</strong>
+                                </div>
+                                <div className="workspace-brief-item is-status">
+                                    <span>运行状态</span>
+                                    <strong>{runtimeState}</strong>
+                                    <small>{status || noticeText || resultMeta}</small>
+                                </div>
+                            </div>
+                            <div className="toolbar-actions">
+                                <button type="button" className="secondary-button" onClick={() => sourceInputRef.current?.click()}>
+                                    载入图片
+                                </button>
+                            </div>
                         </div>
                     </header>
 
-                    <section className="signal-rack">
-                        <article className="signal-cell">
-                            <span>SRC</span>
+                    <section className="workspace-metrics">
+                        <article className="workspace-metric">
+                            <span>源图</span>
                             <strong>{sourceSummary}</strong>
                             <small>{assetName}</small>
                         </article>
-                        <article className="signal-cell">
-                            <span>OUT</span>
+                        <article className="workspace-metric">
+                            <span>输出</span>
                             <strong>{resultSummary}</strong>
                             <small>{formatBytes(result?.bytes)}</small>
                         </article>
-                        <article className={`signal-cell ${noticeText ? `signal-${noticeTone}` : ''}`}>
-                            <span>LOG</span>
+                        <article className="workspace-metric">
+                            <span>日志</span>
                             <strong>{runtimeState}</strong>
                             <small>{status || noticeText || resultMeta}</small>
                         </article>
@@ -1516,6 +1648,10 @@ function App() {
                                     <div className="card-header">
                                         <h3>{activePreviewLabel}</h3>
                                         {activePreviewMeta ? <span className="meta-chip">{activePreviewMeta}</span> : null}
+                                    </div>
+                                    <div className="preview-caption">
+                                        <strong>{sourceAsset ? assetName : previewEmptyTitle}</strong>
+                                        <span>{sourceAsset ? `${sourceAsset.mimeType} · ${formatBytes(sourceAsset.size)}` : previewSupportText}</span>
                                     </div>
                                     {selectedTool === 'crop' && sourceAsset && cropPreviewRect ? (
                                         <div
@@ -1641,9 +1777,17 @@ function App() {
                                     ) : sourceAsset ? (
                                         <img src={sourceAsset.dataUrl} alt={sourceAsset.name} className="preview-image" />
                                     ) : (
-                                        <div className="empty-state">
-                                            <strong>DROP IMAGE</strong>
-                                            <p>or load from toolbar</p>
+                                        <div className="empty-state workbench-empty-state">
+                                            <strong>{previewEmptyTitle}</strong>
+                                            <p>{previewEmptyDescription}</p>
+                                            <div className="empty-state-actions">
+                                                {selectedToolMeta.requiresSource ? (
+                                                    <button type="button" className="primary-button" onClick={() => sourceInputRef.current?.click()}>
+                                                        载入图片
+                                                    </button>
+                                                ) : null}
+                                                <span>{previewSupportText}</span>
+                                            </div>
                                         </div>
                                     )}
                                 </article>
@@ -1656,9 +1800,34 @@ function App() {
                                     <h3>{selectedToolMeta.label}</h3>
                                     <span className="panel-chip">{selectedToolMeta.badge}</span>
                                 </div>
+                                <p>{selectedToolMeta.summary}</p>
                             </header>
 
+                            <section className="panel-section panel-summary-grid">
+                                <article className="panel-summary-card" data-tone={sourceReady ? 'ready' : 'pending'}>
+                                    <span>输入状态</span>
+                                    <strong>{sourceReady ? (sourceAsset?.name ?? '文本输入已就绪') : '等待源图'}</strong>
+                                    <small>{selectedToolMeta.requiresSource ? (sourceAsset ? `${sourceSummary} · ${formatBytes(sourceAsset.size)}` : '载入图片后自动解锁运行按钮') : '无需预先载入图片'}</small>
+                                </article>
+                                <article className="panel-summary-card" data-tone={validationError ? 'warning' : 'ready'}>
+                                    <span>参数状态</span>
+                                    <strong>{validationError ? '待修正' : '已就绪'}</strong>
+                                    <small>{validationError ?? '当前参数可以直接提交给本地处理后端。'}</small>
+                                </article>
+                                <article className="panel-summary-card" data-tone={resultReady ? 'ready' : 'pending'}>
+                                    <span>结果状态</span>
+                                    <strong>{resultReady ? '可导出' : '待生成'}</strong>
+                                    <small>{resultReady ? (result?.primaryText ? '结果文本可复制。' : result?.splitItems.length ? `已生成 ${result.splitItems.length} 个切片。` : `${resultSummary} · ${resultMeta}`) : '运行后会在左侧预览区即时反馈结果。'}</small>
+                                </article>
+                            </section>
+
                             {noticeText ? <p className={`notice ${noticeTone}`}>{noticeText}</p> : null}
+
+                            <section className="panel-section panel-note-card">
+                                <span className="panel-note-kicker">下一步</span>
+                                <strong>{runButtonLabel}</strong>
+                                <p>{nextStepText}</p>
+                            </section>
 
                             {renderToolPanel()}
 
@@ -1675,7 +1844,7 @@ function App() {
                                     </button>
                                 </div>
                                 <button type="button" className="primary-button block" onClick={() => void runSelectedTool()} disabled={!canExecute}>
-                                    {busy ? '运行中' : '运行'}
+                                    {runButtonLabel}
                                 </button>
                             </section>
                         </aside>
